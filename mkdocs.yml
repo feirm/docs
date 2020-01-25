@@ -1,0 +1,7 @@
+site_name: Feirm Documentation
+theme:
+  name: 'material'
+nav:
+  - Home: index.md
+extra_css:
+  - 'stylesheets/extra.css'
