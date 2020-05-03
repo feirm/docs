@@ -1,6 +1,6 @@
 # Overview
 
-The Feirm Marketplace originally started as a platform to allow users to exchange digital goods and services in exchange for cryptocurrency. The risk is eliminated by using trustless escrow that is handled by the blockchain, and traders can talk to each other in a secure, peer-to-peer fashion with end-to-end encrypted messages. The content of those messages cannot be decrypted unless the decryption key is voluntarily handed over to a moderator in the event of a dispute.
+The Feirm Marketplace originally started as a platform to allow users to exchange digital goods and services in exchange for cryptocurrency. The risk is eliminated by using trustless escrow that is handled by the blockchain. This means traders can talk to each other in a secure, peer-to-peer fashion with end-to-end encrypted messages. The content of those messages cannot be decrypted unless the decryption key is voluntarily handed over to a moderator in the event of a dispute.
 
 It is important to understand why the Feirm Marketplace isn't completely decentralised. This doesn't mean that the platform isn't secure from hacking or censorship. In order to ensure the Marketplace is accessible to everyone, there are three specific criteria that needs to be met.
 
