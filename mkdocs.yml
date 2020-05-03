@@ -5,5 +5,6 @@ nav:
   - Home: index.md
   - Marketplace:
     - Centralised Layer: marketplace/centralised-layer.md
+    - Cryptography Layer: marketplace/cryptography-layer.md
 extra_css:
   - 'stylesheets/extra.css'
