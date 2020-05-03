@@ -3,8 +3,7 @@ theme:
   name: 'material'
 nav:
   - Home: index.md
-  - Running a Node:
-    - Overview: running-a-node/overview.md
-    - Node Setup: running-a-node/node-setup.md
+  - Marketplace:
+    - Centralised Layer: marketplace/centralised-layer.md
 extra_css:
   - 'stylesheets/extra.css'
