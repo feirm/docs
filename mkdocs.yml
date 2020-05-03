@@ -4,6 +4,7 @@ theme:
 nav:
   - Home: index.md
   - Marketplace:
+    - Overview: marketplace/overview.md
     - Centralised Layer: marketplace/centralised-layer.md
     - Cryptography Layer: marketplace/cryptography-layer.md
 extra_css:
