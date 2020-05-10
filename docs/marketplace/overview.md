@@ -31,7 +31,6 @@ The centralised layer (API) is used to store and transport encrypted data and me
 
 What you can expect to take place on this layer is the following:
 
-* Email notifications
 * Product listings
 * Suspension of user accounts
 * Storage and transport of encrypted data

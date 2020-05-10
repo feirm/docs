@@ -59,33 +59,38 @@ Once all of this information has been generated, the non-sensitive data is submi
 
 | Property                  | Submitted to API |
 | ------------------------- | ---------------- |
-| Passphrase                | False            |
-| SecretKey                 | False            |
-| AccountKeyRoot            | False            |
-| AccountKeyIdentityPrivate | False            |
-| AccountKeyEnc             | False            |
-| AccountKeyIdentityPublic  | True             |
-| PassphraseSalt            | True             |
-| PBKDF2Iterations          | True             |
-| SecretIv                  | True             |
-| CipherText                | True             |
-| TokenSignature            | True             |
-| Username                  | True             |
-| Email                     | True             |
+| Passphrase                | No               |
+| SecretKey                 | No               |
+| AccountKeyRoot            | No               |
+| AccountKeyIdentityPrivate | No               |
+| AccountKeyEnc             | No               |
+| AccountKeyIdentityPublic  | Yes              |
+| PassphraseSalt            | Yes              |
+| PBKDF2Iterations          | Yes              |
+| SecretIv                  | Yes              |
+| CipherText                | Yes              |
+| TokenSignature            | Yes              |
+| Username                  | Yes              |
+| TOTPSecret                | Yes              |
 
 ### Logging into an Account
-When it comes to logging into an account, mandatory two-factor authentication is enforced. By default, the email address associated to the account is used to send login approval requests. In the future, we hope to implement other two-factor authentication methods like TOTP and U2F (for hardware keys) in the future and potentially eliminate the need for an email to be required at all in order to increase user privacy.
+When it comes to logging into an account, mandatory two-factor authentication is enforced. When the user first created an account, they would have been prompted to configure 2FA in order to finalise the account creation process. In the future, we hope to implement other two-factor authentication such as U2F (for hardware keys). 
 
-Two-factor authentication has been made mandatory in order to protect the encrypted `AccountKeyRoot` which comprises of `CipherText` and `SecretIv`. Even though the process is slowed due to key-stretching, passwords are still theoretically susceptible to brute-force attacks. Hiding the encrypted key behind an email-based two-factor authentication method eliminates this hypothetical attack.
+When it came to revising the technical specifications for the Feirm Marketplace, it was decided not to require an email address to use the marketplace. Originally, the users email address was used for mandatory two factor authentication where a confirmation link would be sent to their inbox in order to approve the login. However, whilst this method increases the security of an account compared to no two-factor authentication at all, it still isn't foolproof for the following reasons:
+
+* Assuming that an attacker already has knowledge of your Feirm Marketplace password, then the chances are that they have already gained access to your email account, meaning that the attacker can approve the login request themselves.
+* The increase of phishing emails has made it easy for attackers to gain access to accounts by taking the user to a fake web-page and asking them to enter their account credentials. If there is no email associated to a Feirm Marketplace account, then the user is most likely to note that this is a phishing attempt if they ever receive an email claiming to be from us.
+* Emails are one more piece of identifiable data. Yes, anonymous email providers exist, but using the same email for multiple services forms a digital trail of your activities online. Not to mention that if there was a data breach on the centralised layer, this information could be sold to others against your will.
+
+Two-factor authentication has always been made mandatory in order to protect the encrypted `AccountKeyRoot` which comprises of `CipherText` and `SecretIv`. Even though the process is slowed due to key-stretching, passwords are still theoretically susceptible to brute-force attacks. Hiding the encrypted key behind a TOTP two-factor authentication method eliminates this hypothetical attack as the encrypted information will not be returned in the request unless the temporary passcode is valid.
 
 Although, there is an element of trust needed from us as the two-factor authentication method is handled by the API. If the Feirm Marketplace database were to be leaked, an attacker could get all of the encrypted private keys. Although a breach is bad, the confidential data is encrypted rendering it useless to an attacker. Rainbow table attacks are not possible due to passwords being salted and stretched, and any other type of brute-force attacks are extremely hard. The only time the hacker could obtain a password is if it was very weak in the first place (most likely a commonly used password) or if the password was re-used from another compromised database.
 
 Here is the typical login process:
 
-1. A user enters their username and password.
-2. The password is ignored for this step, but a payload containing the username is sent to the API asking for the associated encrypted private key.
-3. An email is sent to the address associated to the account, containing a secure link to approve the login request.
-4. Once the link is clicked, the original tab will receive the encrypted account details such as `CipherText`, `SecretIv`, `PassphraseSalt` and `PBKDF2Iterations`.
-5. The password is used for this step - it is salted and stretched client-side in order to derive the `SecretKey`. The process is exactly the same as the processes used when creating an account.
-6. If the `SecretKey` can be successfully used to decrypt the encrypted account details, then the attempt is considered as successful. If not, then the user will have to repeat the process again.
-7. The nonce returned in the request is signed by the `AccountKeyIdentityPrivate` in order to prove ownership of the keypair. If the signature is valid on the server-side, a JWT is issued containing the `AccountId`, `Iat` and `Exp`.
+1. A user enters their username and password, as well as a time-based passcode (TOTP).
+2. The password is ignored for this step, but a payload containing the username and the time-based passcode is sent to the API asking for the associated encrypted private key.
+3. If the time-based passcode is valid, the request will return the encrypted account details such as `CipherText`, `SecretIv`, `PassphraseSalt` and `PBKDF2Iterations`.
+4. The password is used for this step - it is salted and stretched client-side in order to derive the `SecretKey`. The process is exactly the same as the processes used when creating an account.
+5. If the `SecretKey` can be successfully used to decrypt the encrypted account details, then the attempt is considered as successful. If not, then the user will have to repeat the process again.
+6. The nonce returned in the request is signed by the `AccountKeyIdentityPrivate` in order to prove ownership of the keypair. If the signature is valid on the server-side, a JWT is issued containing the `AccountId`, `Iat` and `Exp`.

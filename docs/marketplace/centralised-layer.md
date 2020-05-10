@@ -8,7 +8,7 @@ The Feirm Marketplace API is not documented due to constantly being under develo
 ## Accounts
 When first using the Feirm Marketplace, you need to create an account. Your account is known by a public username that cannot be changed.
 
-Instead of a password used to protect data on the server-side, all data is encrypted client-side before being uploaded through the API. Additionally, an email address is required and used for two-factor authentication.
+Instead of a password used to protect data on the server-side, all data is encrypted client-side before being uploaded through the API. Additionally, to further secure a user account, we have made TOTP two-factor authentication mandatory. An application like Google Authenticator or Authy can be used to generate these time-sensitive secrets to assist with logging into an account.
 
 ## Marketplace Moderation
 In order to ensure that the Feirm Marketplace is safe from abuse, we have a responsibility to remove certain users and content from the platform. A user can be suspended if they are caught doing the following actions:
