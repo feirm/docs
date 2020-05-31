@@ -3,6 +3,8 @@ theme:
   name: 'material'
 nav:
   - Home: index.md
+  - Service Nodes:
+    - Overview: service-nodes/overview.md
   - Marketplace:
     - Overview: marketplace/overview.md
     - Centralised Layer: marketplace/centralised-layer.md
