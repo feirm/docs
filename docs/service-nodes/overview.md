@@ -15,6 +15,6 @@ Currently, Feirm Service Nodes act as full nodes on the Feirm network. They only
 It should be noted that the core functionalities of a Feirm Service Node is basic right now. The software is constantly changing, meaning operators need to remain up to date with any updates. Once we push all of the updates in the future, you can expect a Service Node to offer the following services:
 
 * Governance (budget proposals and voting)
-* Message storage
+* Data storage (textual)
 
 Due to the nature of some of these services, there will be a need for better servers, especially when it comes to the amount of bandwidth.
