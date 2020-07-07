@@ -1,6 +1,9 @@
 site_name: Feirm Documentation
+site_url: https://docs.feirm.com/
 theme:
   name: 'material'
+  logo: 'images/feirm.png'
+  favicon: 'images/favicon.ico'
 nav:
   - Home: index.md
   - Service Nodes:
