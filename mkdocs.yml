@@ -6,9 +6,8 @@ theme:
   favicon: 'images/favicon.ico'
 nav:
   - Home: index.md
-  - Service Nodes:
-    - Overview: service-nodes/overview.md
-    - Service Node Functions: service-nodes/service-node-functions.md
+  - Kayda Nodes:
+    - Overview: kayda-nodes/overview.md
   - Marketplace:
     - Overview: marketplace/overview.md
     - Centralised Layer: marketplace/centralised-layer.md
