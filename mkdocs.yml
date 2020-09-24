@@ -8,7 +8,8 @@ nav:
   - Home: index.md
   - Kayda Nodes:
     - Overview: kayda-nodes/overview.md
-    - Kayda Node Functions: kaydanodes/kayda-node-functions.md
+    - Kayda Node Functions: kayda-nodes/kayda-node-functions.md
+    - Technical Overview: kayda-nodes/technical-overview.md
   - Marketplace:
     - Overview: marketplace/overview.md
     - Centralised Layer: marketplace/centralised-layer.md
