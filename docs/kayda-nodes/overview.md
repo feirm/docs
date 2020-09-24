@@ -3,6 +3,7 @@
 Feirm has been able to develop and use decentralised components to build our platforms. This amount of scalability and flexibility has been enabled by a set of incentivised nodes called Service Nodes which operate on a network we like to call Kayda. We also refer to this as our service layer.
 
 In order to run a Kayda Node, an operator ideally needs two pieces of software:
+
 * Feirm Cryptocurrency Daemon
 * Kayda Service Layer Daemon
 
