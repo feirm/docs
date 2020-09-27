@@ -6,6 +6,8 @@ theme:
   favicon: 'images/favicon.ico'
 nav:
   - Home: index.md
+  - Blockchain:
+    - Overview: blockchain/overview.md
   - Kayda Nodes:
     - Overview: kayda-nodes/overview.md
     - Kayda Node Functions: kayda-nodes/kayda-node-functions.md
