@@ -10,7 +10,7 @@ nav:
     - Overview: blockchain/overview.md
   - Kayda Nodes:
     - Overview: kayda-nodes/overview.md
-    - Kayda Node Functions: kayda-nodes/kayda-node-functions.md
+    - Features: kayda-nodes/features.md
     - Technical Overview: kayda-nodes/technical-overview.md
   - Marketplace:
     - Overview: marketplace/overview.md
