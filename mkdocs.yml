@@ -8,10 +8,10 @@ nav:
   - Home: index.md
   - Blockchain:
     - Overview: blockchain/overview.md
-  - Kayda Nodes:
-    - Overview: kayda-nodes/overview.md
-    - Features: kayda-nodes/features.md
-    - Technical Overview: kayda-nodes/technical-overview.md
+  - Kayda:
+    - Overview: kayda/overview.md
+    - Features: kayda/features.md
+    - Technical Overview: kayda/technical-overview.md
   - Marketplace:
     - Overview: marketplace/overview.md
     - Centralised Layer: marketplace/centralised-layer.md
