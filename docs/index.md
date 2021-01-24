@@ -1,3 +1,10 @@
-# Feirm Protocol Documentation
+# Introduction to Feirm
 
-Welcome! This documentation is focused on being the one stop shop for helping individuals to understand the Feirm protocol as well as how to setup, maintain and build on top of the Feirm blockchain. 
+Welcome! Feirm is a blockchain project that develops privacy respecting applications. As a project, we feel very strongly about privacy, decentralisation and security throughout our applications.
+
+The entire Feirm project is made up from two components at the moment:
+
+- Blockchain
+- Kayda Service Layer
+
+The network is powered by the Feirm blockchain. It is a P2P (Peer-to-Peer) network which allows users to transact instantly and with small fees. Additionally, the network is secured with [Service Nodes](#), which provide additional decentralised services to the network.

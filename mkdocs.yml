@@ -5,7 +5,9 @@ theme:
   logo: 'images/feirm.png'
   favicon: 'images/favicon.ico'
 nav:
-  - Home: index.md
+  - Introduction to Feirm: index.md
+  - Downloads: downloads.md
+  - Support: support.md
   - Blockchain:
     - Overview: blockchain/overview.md
   - Kayda:
