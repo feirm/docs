@@ -14,9 +14,9 @@ nav:
     - Overview: kayda/overview.md
     - Features: kayda/features.md
     - Technical Overview: kayda/technical-overview.md
-  - Marketplace:
-    - Overview: marketplace/overview.md
-    - Centralised Layer: marketplace/centralised-layer.md
-    - Cryptography Layer: marketplace/cryptography-layer.md
+  - Platform:
+    - Overview: platform/overview.md
+    - Centralised Layer: platform/centralised-layer.md
+    - Cryptography Layer: platform/cryptography-layer.md
 extra_css:
   - 'stylesheets/extra.css'
