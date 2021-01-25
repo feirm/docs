@@ -1,63 +1,99 @@
 # Cryptography Layer
 
 ## Introduction
-As of 2018, modern web browsers have included the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which allows for using JavaScript to perform cryptographic operations such as encryption, hashing and verifying digital signatures.
+The majority of the cryptography for the Feirm Platform has been made possible thanks to the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API). This API allows web applications using JavaScript to perform cryptographic operations such as encryption, hashing and verifying digital signatures.
 
-The Feirm Marketplace has made use of these cryptographic operations in order to secure information and enable end-to-end secret messaging between users on the platform. The ultimate goal is to allow the end user to retain total control over their account, whilst revealing minimal amounts of metadata to the Feirm Marketplace servers or anyone who might be snooping.
+The Feirm Platform has made use of these cryptographic operations in order to secure information and enable end-to-end encrypted messaging between users on the platform. The ultimate goal is to allow the end user to retain total control over their account, whilst revealing minimal amounts of metadata to our servers or anyone who might be trying to snoop on our network traffic.
 
-The techniques used by the Feirm Marketplace have been inspired and used by trusted services like Open Whisper System's Signal Protocol, Blockchain.info's encrypted web-wallet and Off-the-Record Messaging protocol. Each of these systems are still in widespread use today and have undergone heavy security audits from professional cryptographers.
+The techniques used by the Feirm Platform have been inspired and used by trusted services like Open Whisper System's Signal Protocol, Blockchain.info's encrypted web-wallet and Off-the-Record Messaging protocol. Each of these systems are still in widespread use today and have undergone heavy security audits from professional cryptographers.
 
-As the primary cryptography mechanisms used by the Feirm Marketplace to manage keys are executed client-side in the users web browser, there is a possibility of an attacker wanting to inject malicious code into the website. There are two methods of how this could be executed:
+As the primary cryptography mechanisms used by the Feirm Platform to manage keys are executed client-side in the users web browser, there is a possibility of an attacker wanting to inject malicious code into the website. There are two methods of how this could be executed:
 
-* A man-in-the-middle (MITM) attack against the webserver where the Feirm Marketplace is hosted.
-* An attack against any third party JavaScript libraries used by the Feirm Marketplace website.
+* A man-in-the-middle (MITM) attack against between the CDN delivering the Platform web application, and the end user. This is highly unlikely due to SSL encrypting data in transport.
+* An attack against any third party JavaScript libraries being used by the Feirm Platform web application. Again, this is unlikely as the web application is not dependent on many third-party libraries at all.
 
-In order to limit this attack surface, we chose not to use any third-party analytics scripts such as Google Analytics as it cannot be guaranteed that they will always be secure. Not to mention the invasive data collection involved too.
-
-In the future, once the Feirm Marketplace client is further developed, we will make it open source so that users can run the website locally instead of having to rely on our webserver.
+In order to try and limit the attack surface though, we chose not to use any analytics scripts or platforms, such as Google Analytics, as it cannot be guaranteed that the tracking scripts they provide do not contain malicious code. Not to mention that tracking our users is something we are against too. 
 
 ## User Accounts
-When the user logs in to their Feirm Marketplace account, it appears they are doing so with their username and password. This may be the case, but involved is heavy client-side cryptography that is ongoing in the background. For example, the password is a type of secret key which never leaves the users web-browser.
+When the user logs in to their Feirm Platform account, it appears they are doing so with their username, password and PIN. This may be the case, but involved is heavy client-side cryptography. For example, we do not authenticate a user with their password, but a unique cryptographic keypair instead.
+
+**Root Key**
+
+The root key is a 32-byte hexadecimal string used as the root of a Feirm Platform account. It can be used to derive identity keypairs and other encryption keys for a user account. It is vital to keep this secure because once it is compromised, the entire account is unsafe.
 
 **Secret Key**
 
-The secret key is determined by transforming the users password into a secure key using a key stretching mechanism like Argon2. A further key is encrypted with the stretched key and this is used for actions on the Feirm Marketplace.
+The secret key is initially derived from a user password in order to create a much stronger password. User provided passwords are typically short, predictable and insecure, so we apply cryptography to make it stronger. The Platform web application currently uses the Argon2 key derivation function to achieve this in the browser.
 
-**Public Identity Key**
+**Identity Keypair**
 
-Each account on the Feirm Marketplace has a permanent public identity key pair. This is used to authenticate the ownership of the account as well as various other actions on the Marketplace.
+Each account on the Feirm Platform has a permanent identity keypair associated to it. As the name states, it is a users identity, meaning it is used anywhere from authentication (proving the user owns their identity keypair) all the way through to encryption.
 
-On a Feirm Marketplace users profile, the public key of their account is shown. Other users who are visiting or interacting with this user are encouraged to make a note of this public key to ensure that it does not change. Whilst the user cannot change their public key, there is a possibility of a man-in-the-middle or hijacking attack that could alter the public key. The Feirm Marketplace does plan to combat these attacks by relying on an external PKI or DPKI.
+A users identity keypair cannot change throughout the lifetime of their account. On the centralised layer, a users identity public key is stored, meaning there is a possibility of an attack which could alter the public key in the event of a breach. We do plan to mitigate this threat in the future by implementing a form of decentralised identity solution.
 
 ### Creating an Account
-When the user wants to create a new account, they first need to generate a public and private key pair. In order to prove ownership of the public key later on, the API requires the user to sign a unique message whilst signing up.
+When the user wants to create a new account, they first need to generate an identity keypair which we just discussed. In order to prove ownership of this identity keypair, the API requires the user to sign a unique message whilst signing up. This process is done in the background however, so no additional actions are required from the end user. Here is the process in a bit more detail.
 
-Upon signing up, a request is made to fetch a generate a new ephemeral registration "token" from the API. It contains two parts:
+#### Generating a Root Key
+We first must generate a Root Key, or what we call the `AccountKeyRoot`. This is a random 32-byte hexadecimal string derived client-side using the Web Crypto API. It is the base of our account. Here is an example of what a Root Key looks like.
 
-* `Id` - A unique identifier
-* `Nonce` - A unique message to sign with the private key
+```
+781eda7b532c186e9d8c820650c055d9337ed090703f112f5cc3a6c1131f07e5
+```
 
-Now that the token has been retrieved from the API, the user needs to generate an account keypair. The next step is to generate a 32-byte seed which is used as the base for all cryptographic operations to take place throughout an account - **it is vital to keep this secure**. We will call this the `AccountKeyRoot`.
+#### Generating an Identity Keypair
+Now that we have the Root Key, we can derive 2 more keys to be used throughout the Feirm Platform. It is bad practice to use the same key for everything, hence the reason for this being our Root Key to derive new keys from. These are the 2 keys we will be deriving:
 
-Once we have our `AccountKeyRoot`, we need to derive two more keys from it:
+1. Identity Keypair private key (`AccountKeyIdentityPrivate`) - Derived using `SHA256(AccountKeyRoot | "identity")`. Acts as the seed to produce an Ed25519 keypair.
+2. Encryption private key (`AccountKeyEnc`) - Used to encrypt other account data (such as contacts) using AES-256. Derived using `SHA256(AccountKeyRoot | "enc")`.
 
-1. `AccountKeyIdentityPrivate` - this will be our private key used for signing messages using the secp256k1 elliptic curve. It is derived using `SHA256(AccountKeyRoot + "identity")`
-2. `AccountKeyEnc` - this is used for AES-256 encryption. It is derived using `SHA256(AccountKeyRoot + "enc")`
+#### Proving ownership of the Identity Keypair
+To verify that the user owns their Ed25519 Identity keypair, they are required to fetch an ephemeral token from the API, and sign the nonce. Each ephemeral token has a short life-span of 5 minutes and a unique identifier associated to it. This is primarily used by the API to query the Redis cache and associate tokens between users. Here is an example of an ephemeral token returned by the API.
 
-The unencrypted `AccountKeyRoot` **never** leaves the users device. It always stays in the browser. For this reason, to ensure a user cannot be locked out of their account just by forgetting their `AccountKeyRoot`, we store an encrypted version on the Feirm Marketplace server. Instead of a password, we use a stretched version of the users password so that it is more secure and makes brute-force attacks near-impossible. This is our secret key that we discussed earlier.
+```json
+{
+    "id":"caef00e7-ec71-4aea-b338-81a31909b767",
+    "nonce":"Sign this message to create your Feirm account. Random nonce: 3850b0dbb0dd177c5e80f383c58e1c9985080eab9ac5b956821bbccd960fb2fe"
+}
+```
 
-In order to transform a user's plaintext password into our secret key, we use the key derivation function [Argon2](https://en.wikipedia.org/wiki/Argon2). The first implementation of the cryptography for the Feirm Marketplace evolved around PBKDF2, but Argon2 allows for better password-cracking resistance. Transforming a password into a more stronger key is known as *"key-stretching"* and adds additional computational work to make it extremely difficult to crack a password. The user's password is taken and stretched using Argon2 with salt `PassphraseSalt` to create our secret key `SecretKey`. Here is a breakdown of these values:
+Once the nonce has been successfully signed by the Identity Keypair, we can then encrypt all the sensitive data of a user account using the Secret Key (derived from a users password) and AES-256-CBC.
 
-* `PassphraseSalt` - 16 random bytes used for Argon2 salt
+#### Generating the Secret Key
+First of all, we generate a random 16-bytes of Salt (`PassphraseSalt`) to be used for Argon2 key derivation. When it comes to using Argon2, there are a few different versions. For the Feirm Platform, we use the `Argon2id` version which is a hybrid of the other versions and generally the most recommended to use. We also use a hash length of 32 bytes. More information about Argon2 can be found [here](https://en.wikipedia.org/wiki/Argon2).
 
-Now that we have our `SecretKey`, we can use it to encrypt our `AccountKeyRoot` using AES-256-CBC. We generate an additional 16 random bytes to act as our initialisation vector `SecretIv`. The ciphertext of the encryption will be known as `CipherText`
+Now that we have our 16-bytes of Salt, we can generate our Argon2 hash with a length of 32 bytes. Here is an example of the password stretching process:
 
-Lastly, the final thing we have to do is sign the `Nonce` of our token we received at the beginning. To do this, we first generate a Keccak-256 hash of the `Nonce`. Our signature (`TokenSignature`) is an ECDSA secp256k1 signature of the Keccak-256 hash of `Nonce`.
+```
+Plaintext Password: password123
+PassphraseSalt: 6fcd4bd1c80185e0d14c051f1cc72444
 
-Once all of this information has been generated, the non-sensitive data is submitted to the Feirm Marketplace API. Below is a table of all the data generated and submitted:
+Argon Output
+============
+Hex: e7f665b8f4f3765a5cbd75726202a90abb0167ad96ea3ba618ee492f75dddff9
+Encoded: $argon2id$v=19$m=16,t=2,p=1$NmZjZDRiZDFjODAxODVlMGQxNGMwNTFmMWNjNzI0NDQ$5/ZluPTzdlpcvXVyYgKpCrsBZ62W6jumGO5JL3Xd3/k
+```
+
+It is important to note that the API does not store the stretched version of the Secret Key, only the Salt generated so that the Secret Key can be reconstructed at a later date (when signing in from a new device). The point now though is that we have a much stronger key which can be used to encrypt our Feirm Platform account root key.
+
+#### Encrypting the Root Key
+Now that we have a strong Secret Key, this can be used to encrypt the Root Key of a user account. Encryption is carried out using AES-256-CBC. In the future we may choose to use a different encryption algorithm, but AES is the gold-standard at the moment.
+
+To get started, we generate some more random salt to be used as our Initialisation Vector (IV) (or `SecretIv`) - again, this is 16-bytes.
+
+We provide the Secret Key, IV and Root Key as inputs to the AES Cipher, and as a result, we are left with the Ciphertext of our encrypted Root Key.
+
+```
+Ciphertext: a8626916a69905facf6000e004ae99af19fcf3398e1f6d5099d2425e8696916f
+```
+
+#### Sending the data to the API
+We now have all the data necessary to construct a payload to be sent to the API. Here is a table containing the data we have generated/derived so far, and whether or not it will be sent to the API:
 
 | Property                  | Submitted to API |
 | ------------------------- | ---------------- |
+| Username                  | Yes              |
+| PIN                       | Yes              |
 | Passphrase                | No               |
 | SecretKey                 | No               |
 | AccountKeyRoot            | No               |
@@ -66,29 +102,23 @@ Once all of this information has been generated, the non-sensitive data is submi
 | AccountKeyIdentityPublic  | Yes              |
 | PassphraseSalt            | Yes              |
 | SecretIv                  | Yes              |
-| CipherText                | Yes              |
+| Ciphertext                | Yes              |
 | TokenSignature            | Yes              |
-| Username                  | Yes              |
-| TOTPSecret                | Yes              |
 
 ### Logging into an Account
-When it comes to logging into an account, mandatory two-factor authentication is enforced. When the user first created an account, they would have been prompted to configure 2FA in order to finalise the account creation process. In the future, we hope to implement other two-factor authentication such as U2F (for hardware keys). 
+When it comes to logging into an account, the user is required to enter the six-digit PIN from when they created their account. Without the correct PIN, a user connect retrieve the encrypted payload for their account. This mechanism was introduced as an attempt to mitigate brute-force attacks on the encrypted payloads. Paired with rate limiting enforced by the authentication API, it makes trying to brute-force PIN numbers an extremely difficult process. Also not to mention that if an attacker was able to guess a PIN correctly, they would need to decrypt the account payload - which is near impossible at the present day.
 
-When it came to revising the technical specifications for the Feirm Marketplace, it was decided not to require an email address to use the marketplace. Originally, the users email address was used for mandatory two factor authentication where a confirmation link would be sent to their inbox in order to approve the login. However, whilst this method increases the security of an account compared to no two-factor authentication at all, it still isn't foolproof for the following reasons:
+Although, there is an element of trust needed from the Feirm project as PIN entry is handled by the authentication API. If the Feirm Platform database were to be leaked, an attacker could get their hands on all of the encrypted account payloads. A PIN number will not help in that regard. It's purely to keep snooping individuals from trying to get access to your encrypted account data.
 
-* Assuming that an attacker already has knowledge of your Feirm Marketplace password, then the chances are that they have already gained access to your email account, meaning that the attacker can approve the login request themselves.
-* The increase of phishing emails has made it easy for attackers to gain access to accounts by taking the user to a fake web-page and asking them to enter their account credentials. If there is no email associated to a Feirm Marketplace account, then the user is most likely to note that this is a phishing attempt if they ever receive an email claiming to be from us.
-* Emails are one more piece of identifiable data. Yes, anonymous email providers exist, but using the same email for multiple services forms a digital trail of your activities online. Not to mention that if there was a data breach on the centralised layer, this information could be sold to others against your will.
+Although a breach is bad, the sensitive data is encrypted rendering it useless to an attacker. Rainbow table attacks are not possible due to the fact that passwords or Secret Keys are not directly stored by the authentication API. The only time an attacker could potentially re-compute a Secret Key is if a user used a weak password when creating their Feirm Platform account.
 
-Two-factor authentication has always been made mandatory in order to protect the encrypted `AccountKeyRoot` which comprises of `CipherText` and `SecretIv`. Even though the process is slowed due to key-stretching, passwords are still theoretically susceptible to brute-force attacks. Hiding the encrypted key behind a TOTP two-factor authentication method eliminates this hypothetical attack as the encrypted information will not be returned in the request unless the temporary passcode is valid.
-
-Although, there is an element of trust needed from us as the two-factor authentication method is handled by the API. If the Feirm Marketplace database were to be leaked, an attacker could get all of the encrypted private keys. Although a breach is bad, the confidential data is encrypted rendering it useless to an attacker. Rainbow table attacks are not possible due to passwords being salted and stretched, and any other type of brute-force attacks are extremely hard. The only time the hacker could obtain a password is if it was very weak in the first place (most likely a commonly used password) or if the password was re-used from another compromised database.
+There is no way to indicate the strength of a password against the authentication API, which is why the web application uses [zxcvbn](https://github.com/dropbox/zxcvbn) to estimate the strength of a user password on the client-side. We enforce a rule that all user accounts must have a "strong" password, which hypothetically mitigates the ability to decrypt account data based on a weak password.
 
 Here is the typical login process:
 
-1. A user enters their username and password, as well as a time-based passcode (TOTP).
-2. The password is ignored for this step, but a payload containing the username and the time-based passcode is sent to the API asking for the associated encrypted private key.
-3. If the time-based passcode is valid, the request will return the encrypted account details such as `CipherText`, `SecretIv` and `PassphraseSalt`.
+1. A user enters their username and password, as well as their PIN.
+2. The password is ignored for this step, but a payload containing the username and the six-digit PIN is sent to the API asking for the associated encrypted account data.
+3. If the PIN is valid, the request will return the encrypted account data such as `CipherText`, `SecretIv` and `PassphraseSalt`.
 4. The password is used for this step - it is salted and stretched client-side in order to derive the `SecretKey`. The process is exactly the same as the processes used when creating an account.
 5. If the `SecretKey` can be successfully used to decrypt the encrypted account details, then the attempt is considered as successful. If not, then the user will have to repeat the process again.
-6. The nonce returned in the request is signed by the `AccountKeyIdentityPrivate` in order to prove ownership of the keypair. If the signature is valid on the server-side, a JWT is issued containing the `AccountId`, `Iat` and `Exp`.
+6. The nonce returned in the request is signed by the `AccountKeyIdentityPrivate` in order to prove ownership of the Identity Keypair. If the signature is valid on the server-side, a JWT session token is issued, and the user is logged in.
